@@ -34,5 +34,7 @@ done
 if "${G[@]}" diff --cached --quiet; then echo "nothing to sync"; exit 0; fi
 
 "${G[@]}" commit -q -m "${1:-sync $(date '+%Y-%m-%d %H:%M')}"
+echo "-- committed successfully"
 "${G[@]}" push -q 2>/dev/null || echo "nsync: failed to push" >&2
+echo "-- pushed successfully"
 "${G[@]}" log --oneline -1
