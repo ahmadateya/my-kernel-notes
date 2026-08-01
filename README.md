@@ -1,4 +1,4 @@
-# kernel-notes
+# my kernel-notes
 
 My annotations on the Linux kernel: inline comments written into kernel files,
 plus standalone notes in `_notes/`. This repo holds **only my changes** — the
@@ -10,7 +10,7 @@ One copy of every file on disk. `fs/exec.c` is a single file containing
 upstream code *and* my comments. Only the *history* is duplicated.
 
 ```
-~/linux/                 the only directory with files
+~/lnx/                 the only directory with files
 ├── .git/                   CAMERA A — kernel history (~6 GB), read-only
 ├── fs/exec.c               upstream code + my comments, same file
 ├── _notes/  _scripts/  .vscode/
@@ -20,7 +20,7 @@ upstream code *and* my comments. Only the *history* is duplicated.
 ```
 
 Camera B's `.git` lives **outside** the tree; its files live **inside** it:
-`--git-dir=$HOME/kernel-notes.git --work-tree=$HOME/linux`
+`--git-dir=$HOME/my-kernel-notes.git --work-tree=$HOME/lnx`
 
 **No merge step exists.** Merging needs two versions of a file; there's one.
 Camera B just *remembers* the file's state, and `checkout` writes it back.
@@ -59,17 +59,17 @@ can't be read later, which defeats half the point of keeping history.
 ## Setup (once)
 
 ```bash
-git clone https://github.com/torvalds/linux.git ~/linux
-cd ~/linux && git checkout v6.12        # pin here; line numbers must not shift
+git clone https://github.com/torvalds/linux.git ~/lnx
+cd ~/lnx && git checkout v7.2-rc1        # pin here; line numbers must not shift
 
-git --git-dir=$HOME/kernel-notes.git --work-tree=$HOME/linux init
-G="git --git-dir=$HOME/kernel-notes.git --work-tree=$HOME/linux"
+git --git-dir=$HOME/my-kernel-notes.git --work-tree=$HOME/linux init
+G="git --git-dir=$HOME/my-kernel-notes.git --work-tree=$HOME/linux"
 $G config status.showUntrackedFiles no  # else it lists 95k files
 $G config user.name "Ahmad"
-$G remote add origin git@github.com:<you>/kernel-notes.git
+$G remote add origin git@github.com:ahmadateya/my-kernel-notes.git
 
-mkdir -p ~/linux/_scripts               # put nsync here, chmod +x
-ln -s ~/linux/_scripts/nsync ~/bin/nsync
+mkdir -p ~/lnx/_scripts               # put nsync here, chmod +x
+ln -s ~/lnx/_scripts/nsync ~/bin/nsync
 ```
 
 ## Cloning onto a new machine
@@ -77,15 +77,15 @@ ln -s ~/linux/_scripts/nsync ~/bin/nsync
 Order matters — kernel first, notes second.
 
 ```bash
-git clone https://github.com/torvalds/linux.git ~/linux
-cd ~/linux && git checkout v6.12
+git clone https://github.com/torvalds/linux.git ~/lnx
+cd ~/lnx && git checkout v7.2-rc1
 
-git clone --bare git@github.com:<you>/kernel-notes.git ~/kernel-notes.git
-G="git --git-dir=$HOME/kernel-notes.git --work-tree=$HOME/linux"
+git clone --bare git@github.com:ahmadateya/my-kernel-notes.git ~/my-kernel-notes.git
+G="git --git-dir=$HOME/my-kernel-notes.git --work-tree=$HOME/lnx"
 $G checkout -f -- .
 $G config status.showUntrackedFiles no
 
-ln -s ~/linux/_scripts/nsync ~/bin/nsync
+ln -s ~/lnx/_scripts/nsync ~/bin/nsync
 ```
 
 That `checkout` line is unavoidable: `nsync` lives inside the repo, so it
