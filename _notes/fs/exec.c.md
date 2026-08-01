@@ -27,3 +27,5 @@ This function is soo importatnt, it is the first step in creating a new process 
 - populates it with a temporary stack `vm_area_struct`. 
 
 The `mm_struct` is the main data structure that represents the memory layout of a process, and it contains information about the process's virtual memory areas (VMAs), page tables, and other memory-related information.
+
+## L257 <!-- linenote:unfiled/6pgGBJFmZ7Gqx2ZgBnrprc -->
