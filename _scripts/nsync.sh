@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
 #   nsync                     sync + commit + push
-#   nsync "exec path"         نفس الحاجة برسالة commit
-#   nsync -- blame fs/exec.c  أي أمر git على repo النوتس
+#   nsync "exec path"         same thing but with commit msg
+#   nsync -- blame fs/exec.c  for any git cmd on the my-kernel-notes repo
 #
 set -euo pipefail
 
-# -- change this
+# -- update this besides the kernel repo
 GIT_DIR_PATH="${KERNEL_NOTES_GIT:-$HOME/Desktop/linux_work/my-kernel-notes.git}"
 
 SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -36,5 +36,3 @@ if "${G[@]}" diff --cached --quiet; then echo "nothing to sync"; exit 0; fi
 "${G[@]}" commit -q -m "${1:-sync $(date '+%Y-%m-%d %H:%M')}"
 echo "-- committed successfully"
 "${G[@]}" push -q 2>/dev/null || echo "nsync: failed to push" >&2
-echo "-- pushed successfully"
-"${G[@]}" log --oneline -1
