@@ -1546,8 +1546,7 @@ static void check_unsafe_exec(struct linux_binprm *bprm)
 	n_fs = 1;
 	read_seqlock_excl(&p->fs->seq);
 	rcu_read_lock();
-	for_other_threads(p, t)
-	{
+	for_other_threads(p, t) {
 		if (t->fs == p->fs)
 			n_fs++;
 	}
