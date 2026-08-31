@@ -29,3 +29,18 @@ This function is soo importatnt, it is the first step in creating a new process 
 The `mm_struct` is the main data structure that represents the memory layout of a process, and it contains information about the process's virtual memory areas (VMAs), page tables, and other memory-related information.
 
 ## L257 <!-- linenote:unfiled/6pgGBJFmZ7Gqx2ZgBnrprc -->
+
+## L1104
+
+in this function the kernel (not revised):
+- clears up state in the kernel that refers to the previous program.
+- Any other threads of the old program are killed so the new program starts with a single thread
+- and the signal-handling information for the process is unshared so that it can be safely altered later.
+- Any pending POSIX timers for the old program are cleared, and the location of the executable file for the program (visible at /proc/pid/exe) is updated. 
+- The virtual memory mappings for the old program are released, which also kills any pending asynchronous I/O operations and frees any uprobes. 
+- Finally (this happens in `fs/binfmt_elf.c:1018`), the personality of the process is updated to remove any features that could affect security, as previously recorded in the per_clear field in linux_binprm. 
+
+
+
+## Resources
+- https://lwn.net/Articles/631631/

@@ -872,6 +872,8 @@ enum bpf_type_flag {
 /* Max number of all types. */
 #define BPF_TYPE_LIMIT		(__BPF_TYPE_LAST_FLAG | (__BPF_TYPE_LAST_FLAG - 1))
 
+// 📌  unfiled/8L7BxCJzDf5SnGpY8CzQwB 📝 🗑️
+
 /* function argument constraints */
 enum bpf_arg_type {
 	ARG_DONTCARE = 0,	/* unused argument in helper function */
@@ -1138,6 +1140,7 @@ struct bpf_prog_ops {
 			union bpf_attr __user *uattr);
 };
 
+// NOTE:: this represents registers states in the verification process. 
 struct bpf_reg_state;
 struct bpf_verifier_ops {
 	/* return eBPF function prototype for verification */
