@@ -77,6 +77,8 @@ typedef struct {
 #define _struct_page_alignment	__aligned(sizeof(unsigned long))
 #endif
 
+// 📌  unfiled/mND2LB1nvawTWdQiunQEjR 📝 🗑️
+
 struct page {
 	memdesc_flags_t flags;		/* Atomic flags, some possibly
 					 * updated asynchronously */
@@ -94,6 +96,7 @@ struct page {
 			 * by the page owner.
 			 */
 			union {
+				//NOTE:: least recently used pages
 				struct list_head lru;
 
 				/* Or, free page */
@@ -127,6 +130,7 @@ struct page {
 			atomic_long_t pp_ref_count;
 		};
 		struct {	/* Tail pages of compound page */
+			// NOTE:: for compounded pages (huge pages)
 			unsigned long compound_info;	/* Bit zero is set */
 		};
 		struct {	/* ZONE_DEVICE pages */
@@ -178,10 +182,12 @@ struct page {
 		 * transitions both from it and to it can be tracked, using
 		 * atomic_inc_and_test() and atomic_add_negative(-1).
 		 */
+		//NOTE:: how many PTE (page table entries) refer to this physical page.
 		atomic_t _mapcount;
 	};
 
 	/* Usage count. *DO NOT USE DIRECTLY*. See page_ref.h */
+	//NOTE:: number of references in the kernel to this page
 	atomic_t _refcount;
 
 #ifdef CONFIG_MEMCG
@@ -201,6 +207,7 @@ struct page {
 	 * WANT_PAGE_VIRTUAL in asm/page.h
 	 */
 #if defined(WANT_PAGE_VIRTUAL)
+//NOTE:: refers to the virtual address ONLY IF its mapped to kernel high memory 
 	void *virtual;			/* Kernel virtual address (NULL if
 					   not kmapped, ie. highmem) */
 #endif /* WANT_PAGE_VIRTUAL */
