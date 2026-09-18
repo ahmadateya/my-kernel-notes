@@ -993,6 +993,10 @@ void start_kernel(void)
 	boot_cpu_init();
 	page_address_init();
 	pr_notice("%s", linux_banner);
+
+	// NOTE:: is an arch-specific set-up function responsible for (among other things):
+	// - initialization of the system boot up and memory allocator related to it bootmem.
+	// 		- these memory allocators are different than regular ones (kmalloc, vmalloc as they arent initialized yet)
 	setup_arch(&command_line);
 	mm_core_init_early();
 	/* Static keys and static calls are needed by LSMs */
@@ -1002,6 +1006,11 @@ void start_kernel(void)
 	setup_boot_config();
 	setup_command_line(command_line);
 	setup_nr_cpu_ids();
+	// NOTE:: 
+	// The purpose of setup_per_cpu_areas() is to create a copy of per-cpu vars for each system CPU.
+	// On SMP systems :
+	// - initializes per-CPU vars defined statically in the source code (using the per_cpu macro)
+	// 		- Variables of this kind are stored in a separate section of the kernel binaries.
 	setup_per_cpu_areas();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
 	early_numa_node_init();
@@ -1033,6 +1042,7 @@ void start_kernel(void)
 	vfs_caches_init_early();
 	sort_main_extable();
 	trap_init();
+	//NOTE:: here we build_all_zonelists() NUMA related stuff ...etc
 	mm_core_init();
 	maple_tree_init();
 	poking_init();
@@ -1139,7 +1149,7 @@ void start_kernel(void)
 	acpi_early_init();
 	if (late_time_init)
 		late_time_init();
-	sched_clock_init();
+	sched_clock_ibnit();
 	calibrate_delay();
 
 	arch_cpu_finalize_init();

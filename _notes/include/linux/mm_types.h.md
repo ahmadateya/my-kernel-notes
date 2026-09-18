@@ -1,4 +1,1 @@
-## L80 
-
-`struct page` is the struct representing the physical pages in memory
-
+## L80 <!-- linenote:unfiled/mND2LB1nvawTWdQiunQEjR -->

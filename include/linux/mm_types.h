@@ -77,8 +77,8 @@ typedef struct {
 #define _struct_page_alignment	__aligned(sizeof(unsigned long))
 #endif
 
-// 📌  unfiled/mND2LB1nvawTWdQiunQEjR 📝 🗑️
 
+// NOTE:: this is the physical page frame
 struct page {
 	memdesc_flags_t flags;		/* Atomic flags, some possibly
 					 * updated asynchronously */
@@ -913,11 +913,12 @@ struct vm_area_desc {
 };
 
 /*
- * NOTE:: I came here from bprm_mm_init() in fs/exec.c
+ * NOTE:: I came here from bprm_mm_init() in fs/exec.c (first time)
+ * (second time): vm_area is the chunks that the process address space split into.
+ */
+/*
  * This struct describes a virtual memory area. There is one of these
- * per VM-area/task. 
- *
- * A VM area is any part of the process virtual memory
+ * per VM-area/task. A VM area is any part of the process virtual memory
  * space that has a special rule for the page-fault handlers (ie a shared
  * library, the executable area etc).
  *
@@ -1168,6 +1169,7 @@ typedef struct {
 struct kioctx_table;
 struct iommu_mm_data;
 // NOTE:: I came here from bprm_mm_init() in fs/exec.c
+// mm_struct: describes the process address space 
 struct mm_struct {
 	struct {
 		/*
@@ -1178,7 +1180,7 @@ struct mm_struct {
 			/**
 			 * @mm_count: The number of references to &struct
 			 * mm_struct (@mm_users count as 1).
-			 *
+		 	 *  NOTE:: if 7 threads share the same process space the mm_count will still be 1
 			 * Use mmgrab()/mmdrop() to modify. When this drops to
 			 * 0, the &struct mm_struct is freed.
 			 */
@@ -1195,6 +1197,7 @@ struct mm_struct {
 		unsigned long mmap_compat_legacy_base;
 #endif
 		unsigned long task_size;	/* size of task vm space */
+		//NOTE:: page global data
 		pgd_t * pgd;
 
 #ifdef CONFIG_MEMBARRIER
@@ -1209,12 +1212,13 @@ struct mm_struct {
 
 		/**
 		 * @mm_users: The number of users including userspace.
-		 *
+		 *	NOTE:: if 2 threads share the same process space, then the mm_users = 2
 		 * Use mmget()/mmget_not_zero()/mmput() to modify. When this
 		 * drops to 0 (i.e. when the task exits and there are no other
 		 * temporary reference holders), we also release a reference on
 		 * @mm_count (which may then free the &struct mm_struct if
 		 * @mm_count also drops to 0).
+		 *  NOTE:: if 7 threds share the same process space the mm_count will still be 1
 		 */
 		atomic_t mm_users;
 
@@ -1297,8 +1301,11 @@ struct mm_struct {
 
 		spinlock_t arg_lock; /* protect the below fields */
 
+		// NOTE:: code = .text section, data = .data section bounderies 
 		unsigned long start_code, end_code, start_data, end_data;
+		// NOTE:: start_brk = starting the heap section, brk = end of heap section
 		unsigned long start_brk, brk, start_stack;
+		// NOTE:: arguments and env vars
 		unsigned long arg_start, arg_end, env_start, env_end;
 
 		unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */

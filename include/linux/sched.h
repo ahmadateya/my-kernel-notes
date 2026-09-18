@@ -968,7 +968,10 @@ struct task_struct {
 	struct plist_node		pushable_tasks;
 	struct rb_node			pushable_dl_tasks;
 
+	//NOTE:: mm is null if the process is a kernel thread,
+	//  otherwise it describes the process address space
 	struct mm_struct		*mm;
+	// 
 	struct mm_struct		*active_mm;
 
 	struct task_exec_state __rcu	*exec_state;
@@ -1194,7 +1197,7 @@ struct task_struct {
 	/* Filesystem information: */
 	struct fs_struct		*fs;
 
-	/* Open file information: */
+	/* NOTE:: Open file information: */
 	struct files_struct		*files;
 
 #ifdef CONFIG_IO_URING

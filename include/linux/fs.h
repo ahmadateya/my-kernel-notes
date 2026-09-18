@@ -855,8 +855,9 @@ struct inode {
 		int			i_linklen;
 	};
 	union {
-		struct pipe_inode_info	*i_pipe;
-		struct cdev		*i_cdev;
+		// NOTE:: special file types
+		struct pipe_inode_info	*i_pipe; // pipe
+		struct cdev		*i_cdev; // char device
 		char			*i_link;
 		unsigned		i_dir_seq;
 	};
@@ -2278,6 +2279,7 @@ int kiocb_modified(struct kiocb *iocb);
 
 int sync_inode_metadata(struct inode *inode, int wait);
 
+// NOTE:: there is only one file_system_type per filesystem, its used to describe the filesystem
 struct file_system_type {
 	const char *name;
 	int fs_flags;
