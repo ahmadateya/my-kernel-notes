@@ -1420,6 +1420,7 @@ struct mm_struct *mm_access(struct task_struct *task, unsigned int mode)
 
 static void complete_vfork_done(struct task_struct *tsk)
 {
+	// NOTE:: use of completion variables, vfork sends a signal to the parent when its work is done
 	struct completion *vfork;
 
 	task_lock(tsk);
@@ -1986,8 +1987,7 @@ static bool need_futex_hash_allocate_default(u64 clone_flags)
  * parts of the process environment (as per the clone
  * flags). The actual kick-off is left to the caller.
  */
-// 📌  unfiled/pgsQW6xZZoByuwJYW8LbrQ 📝 🗑️
-
+// NOTE:: copy_process
 __latent_entropy struct task_struct *copy_process(
 					struct pid *pid,
 					int trace,
@@ -2109,6 +2109,7 @@ __latent_entropy struct task_struct *copy_process(
 		goto fork_out;
 
 	retval = -ENOMEM;
+	// NOTE:: this is where we copy the process task_struct to the new thread/process
 	p = dup_task_struct(current, node);
 	if (!p)
 		goto fork_out;
@@ -2686,7 +2687,7 @@ struct task_struct *create_io_thread(int (*fn)(void *), void *arg, int node)
 	return copy_process(NULL, 0, node, &args);
 }
 
-/*
+/* NOTE:: this is what sys_fork() calls and is the main fork routine
  *  Ok, this is the main fork-routine.
  *
  * It copies the process, and if successful kick-starts
@@ -3016,7 +3017,8 @@ static bool clone3_args_valid(struct kernel_clone_args *kargs)
 	return true;
 }
 
-/**
+/** NOTE:: sys_clone() is the function that implements the linux clone() system call
+ * 	NOTE:: its used by pthread_create() library code to create custom process (aka threads)
  * sys_clone3 - create a new process with specific properties
  * @uargs: argument structure
  * @size:  size of @uargs
@@ -3048,6 +3050,7 @@ SYSCALL_DEFINE2(clone3, struct clone_args __user *, uargs, size_t, size)
 	if (!clone3_args_valid(&kargs))
 		return -EINVAL;
 
+	// NOTE:: sys_clone() ends up calling kernel_clone() but with different args to create a thread
 	return kernel_clone(&kargs);
 }
 

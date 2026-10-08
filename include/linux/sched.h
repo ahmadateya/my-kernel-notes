@@ -829,6 +829,11 @@ struct task_struct {
 	 * For reasons of header soup (see current_thread_info()), this
 	 * must be the first element of task_struct.
 	 */
+	/*
+	 * NOTE:: thread_info is a small set of arch-specific flags that are checked "constantly"
+	 * clearly its is arch dependent and it differs vastly between arm and x86
+	 * Answers the question "does this task need attention?" for example on the syscall or interrupt return path
+	 */
 	struct thread_info		thread_info;
 #endif
 	unsigned int			__state;
@@ -842,11 +847,16 @@ struct task_struct {
 	 */
 	randomized_struct_fields_start
 
-	void				*stack;
+		/*
+	 * NOTE:: any userspace process has 2 stacks: 
+	 * 1.userspace stack: where the process do its work
+	 * 2.kernelspace stack: where the kernel do its work in the process context
+	 */
+		void *stack; // NOTE:: the location of the kernelspace stack
 	refcount_t			usage;
 	/* Per task flags (PF_*), defined further below: */
 	unsigned int			flags;
-	unsigned int			ptrace;
+	unsigned int ptrace; // NOTE:: set when the process is ptrace()d
 
 #ifdef CONFIG_MEM_ALLOC_PROFILING
 	struct alloc_tag		*alloc_tag;
@@ -877,7 +887,8 @@ struct task_struct {
 	int				normal_prio;
 	unsigned int			rt_priority;
 
-	struct sched_entity		se;
+	// NOTE:: scheduling classes
+	struct sched_entity		se; //
 	struct sched_rt_entity		rt;
 	struct sched_dl_entity		dl;
 	struct sched_dl_entity		*dl_server;
@@ -926,7 +937,7 @@ struct task_struct {
 	unsigned int			btrace_seq;
 #endif
 
-	unsigned int			policy;
+	unsigned int			policy; // NOTE:: specify which scheduling class to be in (CFS, realtime, deadline)
 	unsigned long			max_allowed_capacity;
 	int				nr_cpus_allowed;
 	const cpumask_t			*cpus_ptr;
@@ -968,10 +979,14 @@ struct task_struct {
 	struct plist_node		pushable_tasks;
 	struct rb_node			pushable_dl_tasks;
 
-	//NOTE:: mm is null if the process is a kernel thread,
+	//NOTE:: mm is null if the process is a kthread,
 	//  otherwise it describes the process address space
 	struct mm_struct		*mm;
-	// 
+	// NOTE:: active_mm answers which page tables are loaded in the CPU now?
+	//  if its a user thread: active_mm == mm
+	//  if kthread: active_mm == borrowed from the latest task worked on the CPU
+	//  Q: Why borrowed? (lazy TLB)
+	//  A: instead of switching the CR3 and do TLB flush we can leave the page tables loaded as it is (lazy TLB)
 	struct mm_struct		*active_mm;
 
 	struct task_exec_state __rcu	*exec_state;
@@ -1071,9 +1086,17 @@ struct task_struct {
 
 	struct restart_block		restart_block;
 
-	// the reason for this is linux unlike POSIX dont have hierercal view of process and threads
-	pid_t				pid; // pid in kernelspace == tid in userspace
-	pid_t tgid; 			// tgid in kernelspace == pid in userspace
+	/* NOTE::
+	* Single-threaded process: main() (or T0) thread: one unique PID and TGID == PID
+	* Multithreaded process:
+	* 	- main() (or T0) thread: PID and TGID are the same: TGID == PID
+	* 	- other thread: several unique PIDs: TGID == PID of main()
+
+	* the reason for this is unlike POSIX linux dont have hierarchical view of process and threads
+	*/
+
+	pid_t				pid;
+	pid_t				tgid;
 
 #ifdef CONFIG_STACKPROTECTOR
 	/* Canary value for the -fstack-protector GCC feature: */
@@ -1091,7 +1114,7 @@ struct task_struct {
 	/* Recipient of SIGCHLD, wait4() reports: */
 	struct task_struct __rcu	*parent;
 
-	/*
+	/* NOTE:: family attributes
 	 * Children/sibling form the list of natural children:
 	 */
 	struct list_head		children;
@@ -1175,7 +1198,7 @@ struct task_struct {
 	struct key			*cached_requested_key;
 #endif
 
-	/*
+	/* NOTE:: task name
 	 * executable name, excluding path.
 	 *
 	 * - normally initialized by begin_new_exec()
@@ -1194,10 +1217,10 @@ struct task_struct {
 	unsigned long			last_switch_count;
 	unsigned long			last_switch_time;
 #endif
-	/* Filesystem information: */
+	/* NOTE:: process Filesystem information: */
 	struct fs_struct		*fs;
 
-	/* NOTE:: Open file information: */
+	/* NOTE:: all Opened file by the process: */
 	struct files_struct		*files;
 
 #ifdef CONFIG_IO_URING
@@ -1209,12 +1232,16 @@ struct task_struct {
 	struct nsproxy			*nsproxy;
 
 	/* Signal handlers: */
+	// NOTE:: signal_struct contains the rlimit
 	struct signal_struct		*signal;
 	struct sighand_struct __rcu		*sighand;
+	// NOTE:: blocked signals by the process
 	sigset_t			blocked;
 	sigset_t			real_blocked;
 	/* Restored if set_restore_sigmask() was used: */
 	sigset_t			saved_sigmask;
+
+	// NOTE:: 
 	struct sigpending		pending;
 	unsigned long			sas_ss_sp;
 	size_t				sas_ss_size;
@@ -1664,6 +1691,12 @@ struct task_struct {
 #endif
 
 	/* CPU-specific state of this task: */
+	/* NOTE:: thread_struct is the arch-specific CPU state of this task, which is saved and restored on a context switch.
+	 * Answers the question "where was this task's CPU state when it got switched out?"
+	 * The state is: the saved kernel stack pointer, fs/gs base, debug registers, and FPU state.
+
+	 * On x86 it's the last member of task_struct, because the FPU state at its end has a variable size
+	*/
 	struct thread_struct		thread;
 
 	/*

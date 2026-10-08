@@ -470,6 +470,10 @@ struct mapping_metadata_bhs {
  * @i_private_lock: For use by the owner of the address_space.
  */
 // 📌  unfiled/mVXchJYDSwZCikgubo9DQf 📝 🗑️
+// NOTE:: a very misnamed struct to represent the page cache
+// we have only one address_space per file (if we are caching a file)
+// a cached file with one address_space can have many vm_area_structs 
+// a one-to-many mapping from the physical pages to the virtual pages
 struct address_space {
 	struct inode		*host;
 	struct xarray		i_pages;
