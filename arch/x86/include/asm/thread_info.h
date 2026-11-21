@@ -59,8 +59,12 @@ struct task_struct;
 #include <asm/cpufeature.h>
 #include <linux/atomic.h>
 
-// NOTE:: not sure if it still used and how but it was mentioned in LKD 
+// NOTE:: thread_info is a small set of arch-specific flags that are checked "constantly"
 struct thread_info {
+	/*
+	* NOTE:: flags contains:
+	* 1. TIF_NEED_RESCHED: set when preemption is needed (i.e. the scheduler should be invoked)
+	*/
 	unsigned long		flags;		/* low level flags */
 	unsigned long		syscall_work;	/* SYSCALL_WORK_ flags */
 	u32			status;		/* thread synchronous flags */

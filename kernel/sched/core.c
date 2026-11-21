@@ -7027,7 +7027,7 @@ find_proxy_task(struct rq *rq, struct task_struct *donor, struct rq_flags *rf)
 }
 #endif /* SCHED_PROXY_EXEC */
 
-/*
+/* NOTE:: perfectly commented
  * __schedule() is the main scheduler function.
  *
  * The main means of driving the scheduler and thus entering this function are:
@@ -7128,6 +7128,7 @@ static void __sched notrace __schedule(int sched_mode)
 	/* Task state changes only considers SM_PREEMPT as preemption */
 	preempt = sched_mode == SM_PREEMPT;
 
+	//NOTE:: prev value = is the current task, next value = is the next task to run
 	/*
 	 * We must load prev->state once (task_struct::state is volatile), such
 	 * that we form a control dependency vs deactivate_task() below.

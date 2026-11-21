@@ -833,6 +833,8 @@ struct task_struct {
 	 * NOTE:: thread_info is a small set of arch-specific flags that are checked "constantly"
 	 * clearly its is arch dependent and it differs vastly between arm and x86
 	 * Answers the question "does this task need attention?" for example on the syscall or interrupt return path
+	 * 
+	 * originally was part of task_struct and separated for the perf reason to fit in cacheline (at least for x86 and arm)
 	 */
 	struct thread_info		thread_info;
 #endif
