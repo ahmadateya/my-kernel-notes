@@ -1371,6 +1371,8 @@ struct task_struct {
 #endif
 #ifdef CONFIG_CGROUPS
 	/* Control Group info protected by css_set_lock: */
+	// NOTE:: cgroups is a pointer to the css_set struct
+	// which contains the list of cgroup subsystems (controllers) data for this task like (pids_cgroup, memory_cgroup, cpu_cgroup, etc,)
 	struct css_set __rcu		*cgroups;
 	/* cg_list protected by css_set_lock and tsk->alloc_lock: */
 	struct list_head		cg_list;

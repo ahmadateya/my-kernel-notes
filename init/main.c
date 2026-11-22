@@ -968,8 +968,6 @@ static void __init print_kernel_cmdline(const char *cmdline)
 		pr_notice("%s%s\n", KERNEL_CMDLINE_PREFIX, cmdline);
 }
 
-// 📌  unfiled/9XfryJE3s6PUwHwfJfA8TE 📝 🗑️
-
 asmlinkage __visible __init __no_sanitize_address __noreturn __no_stack_protector
 void start_kernel(void)
 {
@@ -981,6 +979,7 @@ void start_kernel(void)
 	debug_objects_early_init();
 	init_vmlinux_build_id();
 
+	// NOTE:: this is where we init the css_set and the cgroup subsystem(controllers)
 	cgroup_init_early();
 
 	local_irq_disable();
