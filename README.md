@@ -1,120 +1,30 @@
-# my kernel-notes
+# my-kernel-notes
 
-My annotations on the Linux kernel: inline comments written into kernel files,
-plus standalone notes in `_notes/`. This repo holds **only my changes** — the
-kernel comes from upstream.
+Notes I take while reading the Linux kernel source, pinned to **v7.2-rc1**.
 
-## Idea: one tree, two repos
+This repo holds only my own changes. The kernel itself comes from upstream.
 
-One copy of every file on disk. `fs/exec.c` is a single file containing
-upstream code *and* my comments. Only the *history* is duplicated.
+## What's here
 
-```
-~/lnx/                 the only directory with files
-├── .git/                   CAMERA A — kernel history (~6 GB), read-only
-├── fs/exec.c               upstream code + my comments, same file
-├── _notes/  _scripts/  .vscode/
-└── .gitignore
+- **Inline annotations**: comments written straight into kernel source files
+  (`fs/exec.c`, `kernel/fork.c`, `mm/mmap.c`, `include/linux/sched.h`, …),
+  each on its own line, so `git blame` on the upstream tree still shows the
+  real age of every original line.
+- **`_notes/`**: standalone write-ups that mirror the kernel's directory
+  layout (`_notes/fs/exec.c.md` goes with `fs/exec.c`), plus:
+  - `_concepts/`: topics that span many files (boot, the ELF loader, folios,
+    namespaces)
+  - `_todo/`: open questions and areas still to read
+- **`_scripts/`**: small helpers for keeping the notes in sync.
 
-~/kernel-notes.git/      CAMERA B — my changes only (MBs) → GitHub (private)
-```
+## Reading the notes
 
-Camera B's `.git` lives **outside** the tree; its files live **inside** it:
-`--git-dir=$HOME/my-kernel-notes.git --work-tree=$HOME/lnx`
+Check out upstream Linux at `v7.2-rc1` and lay this repo over it. The
+annotations depend on line positions, so they only line up on that tag. For
+the full setup and daily workflow, see [`_notes/WORKFLOW.md`](_notes/WORKFLOW.md).
 
-**No merge step exists.** Merging needs two versions of a file; there's one.
-Camera B just *remembers* the file's state, and `checkout` writes it back.
+## Disclaimer
 
-## Reading
-
-| Question | Command |
-|---|---|
-| How old is this kernel line? | `git blame --date=short fs/exec.c` |
-| How did this function evolve? | `git log -L :do_execve:fs/exec.c` |
-| When did *I* write this note? | `nsync -- blame fs/exec.c` |
-| What have I annotated? | `nsync -- ls-files` |
-
-Camera A on an annotated file:
-
-```
-^34674c0 (Linus Torvalds    2005-04-16 1) static int do_execve(struct filename *filename)
-00000000 (Not Committed Yet 2026-08-01 2) 	/* AHMAD: entry point */
-^34674c0 (Linus Torvalds    2005-04-16 3) {
-8a7e1dad (Al Viro           2012-10-20 4) 	return do_execveat_common(AT_FDCWD, filename, NULL);
-```
-
-Real line ages survive and my comment stands out — precisely because it is never
-committed in camera A.
-
-## Daily use
-
-```bash
-nsync                  # stage everything changed, commit, push
-nsync "exec path"      # same, with a real commit message
-```
-
-Write a message when you finish a coherent piece. 300 commits named `sync`
-can't be read later, which defeats half the point of keeping history.
-
-## Setup (once)
-
-```bash
-git clone https://github.com/torvalds/linux.git ~/lnx
-cd ~/lnx && git checkout v7.2-rc1        # pin here; line numbers must not shift
-
-git --git-dir=$HOME/my-kernel-notes.git --work-tree=$HOME/linux init
-G="git --git-dir=$HOME/my-kernel-notes.git --work-tree=$HOME/linux"
-$G config status.showUntrackedFiles no  # else it lists 95k files
-$G config user.name "Ahmad"
-$G remote add origin git@github.com:ahmadateya/my-kernel-notes.git
-
-mkdir -p ~/lnx/_scripts               # put nsync here, chmod +x
-ln -s ~/lnx/_scripts/nsync ~/bin/nsync
-```
-
-## Cloning onto a new machine
-
-Order matters — kernel first, notes second.
-
-```bash
-git clone https://github.com/torvalds/linux.git ~/lnx
-cd ~/lnx && git checkout v7.2-rc1
-
-git clone --bare git@github.com:ahmadateya/my-kernel-notes.git ~/my-kernel-notes.git
-G="git --git-dir=$HOME/my-kernel-notes.git --work-tree=$HOME/lnx"
-$G checkout -f -- .
-$G config status.showUntrackedFiles no
-
-ln -s ~/lnx/_scripts/nsync ~/bin/nsync
-```
-
-That `checkout` line is unavoidable: `nsync` lives inside the repo, so it
-doesn't exist on disk until camera B is laid down.
-
-## Pitfalls
-
-**Never `nsync -- add -f .`** — `.` is the whole tree and `-f` defeats every
-`.gitignore`: ~95k untouched files plus gigabytes of build output. Recover with
-`nsync -- reset` before committing.
-
-**Never run these in `~/linux`:** `git checkout .`, `git stash`,
-`git clean -xfd`, `git reset --hard` — each wipes the inline comments off the
-tree. Recoverable from camera B *if* pushed. So push often.
-
-**Comments go on their own lines.** Appending to an existing line transfers that
-line's blame to me and its real age is lost. `.git-blame-ignore-revs` does not
-fix this.
-
-**Don't move the tag.** Notes are pinned to line positions in v6.12. Read newer
-code through camera A (`git log v6.17 -- fs/exec.c`) without moving the tree.
-
-**Camera A always shows the tree as dirty.** By design. `git pull` there will
-refuse while files are modified — run `nsync` first, re-checkout from camera B
-after.
-
-**Neither camera alone is a backup.** Deleting `~/kernel-notes.git` leaves the
-comments on disk but loses their history; `git checkout .` in camera A destroys
-the on-disk copy while camera B still has it.
-
-**SQLite note DBs don't delta-compress.** Commit `sqlite3 notes.db .dump >
-notes.sql` and exclude the binary via `.git/info/exclude`.
+These are personal study notes and may contain mistakes. The kernel source
+and its documentation are the authority. Kernel code is © its respective
+authors under GPL-2.0.
